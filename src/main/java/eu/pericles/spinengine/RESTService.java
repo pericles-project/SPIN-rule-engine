@@ -31,53 +31,30 @@ public class RESTService {
     public String test() {
         return "test";
     }
-
-
-
     @POST
     @Path("/runInferences")
     @Consumes("application/x-www-form-urlencoded")
     @Produces ("text/plain")
     public String runInferences (@FormParam("baseURI")  final String baseURI,@FormParam("document")  final String document) {
-
-        // Initialize system functions and templates
-        SPINModuleRegistry.get().init();
-
-        Model baseModel = ModelFactory.createDefaultModel();
-        baseModel.read(document);
-
-        // Create OntModel with imports
-        OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM,baseModel);
-
-        // Register locally defined functions
-        SPINModuleRegistry.get().registerAll(ontModel, null);
-
-        // Create and add Model for inferred triples
-        Model newTriples = ModelFactory.createDefaultModel();
-        newTriples.setNsPrefixes(ontModel);
-        ontModel.addSubModel(newTriples);
-
-        // Perform inferencing
-        SPINInferences.run(ontModel, newTriples, null, null, false, null);
-
-        // Create results model
-        StringWriter w = new StringWriter();
-        // Output results in Turtle
-        newTriples.write(w, FileUtils.langTurtle);
-
-        return w.toString();
+    return internalRun(baseURI,document);
     }
     @GET
     @Path("/runInferencesGet")
     @Produces ("text/plain")
-    public String runInferencesGet (@FormParam("baseURI")  final String baseURI,@FormParam("document")  final String document) {
+    public String runInferencesGet (@QueryParam("baseURI")  final String baseURI,@QueryParam("document")  final String document) {
 
+        return internalRun(baseURI,document);
+    }
+
+    private String internalRun(String baseURI, String document) {
         // Initialize system functions and templates
         SPINModuleRegistry.get().init();
 
         Model baseModel = ModelFactory.createDefaultModel();
-        baseModel.read(document);
-
+        if (baseURI!=null)
+            baseModel.read(baseURI);
+        else
+            baseModel.read(document);
         // Create OntModel with imports
         OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM,baseModel);
 

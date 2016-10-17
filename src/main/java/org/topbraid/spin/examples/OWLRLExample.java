@@ -39,7 +39,7 @@ public class OWLRLExample {
 
 		// Load domain model with imports
 		System.out.println("Loading domain ontology...");
-		OntModel queryModel = loadModelWithImports("http://owl.cs.manchester.ac.uk/co-ode-files/ontologies/pizza.owl");
+		OntModel queryModel = loadModelWithImports("http://protege.stanford.edu/ontologies/pizza/pizza.owl");
 		
 		// Create and add Model for inferred triples
 		Model newTriples = ModelFactory.createDefaultModel();

@@ -25,3 +25,7 @@ All the methods use the following 4 parameters (1st parameter is necessary, the 
 The Constraints checking method support one further parameter, that asks the engine to execute the inference before checking the constraints: 
 * `doInference` (optional): true or false (default false)
  
+<h2>An example </h2> 
+
+This example is executed running the engine for constraint checking with inference:<br>
+`http://127.0.0.1:8080/spinengine/runConstraintsGet?baseURI=http://topbraid.org/examples/kennedysSPIN&doInference=true`

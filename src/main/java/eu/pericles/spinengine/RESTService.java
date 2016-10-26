@@ -1,4 +1,5 @@
 package eu.pericles.spinengine;
+
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.compose.MultiUnion;
 import org.apache.jena.ontology.OntModel;
@@ -7,7 +8,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDFS;
-import org.topbraid.spin.arq.functions.SPINFunctionUtil;
 import org.topbraid.spin.constraints.ConstraintViolation;
 import org.topbraid.spin.constraints.SPINConstraints;
 import org.topbraid.spin.inference.SPINInferences;
@@ -18,15 +18,10 @@ import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
 import org.topbraid.spin.vocabulary.SPL;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
-import java.io.*;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.List;
 
 @Provider
@@ -63,16 +58,16 @@ public class RESTService {
     @Path("/runConstraintsPost")
     @Consumes("application/x-www-form-urlencoded")
     @Produces("text/plain")
-    public String runConstraintsPost(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument) {
-        return runConstraintsModel(baseURI, document,SPINURI, SPINdocument);
+    public String runConstraintsPost(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument,  @FormParam("doInference") final boolean doInference) {
+        return runConstraintsModel(baseURI, document,SPINURI, SPINdocument, doInference);
     }
 
     @GET
     @Path("/runConstraintsGet")
     @Produces("text/plain")
-    public String runConstraintsGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument) {
+    public String runConstraintsGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument,  @QueryParam("doInference") final boolean doInference) {
 
-        return runConstraintsModel(baseURI, document,SPINURI, SPINdocument);
+        return runConstraintsModel(baseURI, document,SPINURI, SPINdocument, doInference);
     }
 
 
@@ -100,50 +95,24 @@ public class RESTService {
         return w.toString();
     }
 
-    private OntModel getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {
-        SPINModuleRegistry.get().init();
 
-        Model baseModel = ModelFactory.createDefaultModel();
-        String lang = FileUtils.guessLang(baseURI);
-        if (document != null) {
-            baseModel.read(new StringReader(document), baseURI, lang);
-        }
-        else {
-            baseModel.read(baseURI, lang);
-        }
-        if (SPINURI!=null) {
-            Model spiModel = ModelFactory.createDefaultModel();
-
-            String lang2 = FileUtils.guessLang(SPINURI);
-
-            if (document != null) {
-                baseModel.read(new StringReader(SPINdocument), SPINURI, lang2);
-            }
-            else {
-                spiModel.read(SPINURI, lang);
-            }
-        // Create Model for the base graph with its imports
-            MultiUnion union = new MultiUnion(new Graph[] {
-                    baseModel.getGraph(),
-                    spiModel.getGraph(),
-                    SPL.getModel().getGraph(),
-                    SPIN.getModel().getGraph(),
-                    SP.getModel().getGraph()
-            });
-            baseModel = ModelFactory.createModelForGraph(union);
-        }
-
-        return JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM, baseModel);
-    }
-
-
-    private String runConstraintsModel(String baseURI, String document, String SPINURI, String SPINdocument)  {
+    private String runConstraintsModel(String baseURI, String document, String SPINURI, String SPINdocument, boolean doInference)  {
         // Initialize system functions and templates
         OntModel ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
 
         // Register locally defined functions
         SPINModuleRegistry.get().registerAll(ontModel, null);
 
+
+        if (doInference) {
+            // Create and add Model for inferred triples
+            Model newTriples = ModelFactory.createDefaultModel();
+            newTriples.setNsPrefixes(ontModel);
+            ontModel.addSubModel(newTriples);
+            // Perform inferencing
+            SPINInferences.run(ontModel, newTriples, null, null, false, null);
+
+        }
         // Perform constraint checking
         List<ConstraintViolation> cvs = SPINConstraints.check(ontModel, null);
         System.out.println("Constraint violations:");
@@ -182,4 +151,42 @@ public class RESTService {
 
         return cvs;
     }
+
+    private OntModel getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {
+        SPINModuleRegistry.get().init();
+
+        Model baseModel = ModelFactory.createDefaultModel();
+        String lang = FileUtils.guessLang(baseURI);
+        if (document != null) {
+            baseModel.read(new StringReader(document), baseURI, lang);
+        }
+        else {
+            baseModel.read(baseURI, lang);
+        }
+        if (SPINURI!=null) {
+            Model spiModel = ModelFactory.createDefaultModel();
+
+            String lang2 = FileUtils.guessLang(SPINURI);
+
+            if (document != null) {
+                baseModel.read(new StringReader(SPINdocument), SPINURI, lang2);
+            }
+            else {
+                spiModel.read(SPINURI, lang);
+            }
+            // Create Model for the base graph with its imports
+            MultiUnion union = new MultiUnion(new Graph[] {
+                    baseModel.getGraph(),
+                    spiModel.getGraph(),
+                    SPL.getModel().getGraph(),
+                    SPIN.getModel().getGraph(),
+                    SP.getModel().getGraph()
+            });
+            baseModel = ModelFactory.createModelForGraph(union);
+        }
+
+        return JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM, baseModel);
+    }
+
+
 }

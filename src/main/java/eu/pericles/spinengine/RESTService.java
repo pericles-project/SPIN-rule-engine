@@ -1,5 +1,6 @@
 package eu.pericles.spinengine;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.compose.MultiUnion;
 import org.apache.jena.ontology.OntModel;
@@ -22,13 +23,58 @@ import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Provider
 @Path("/")
 public class RESTService {
 
+    static {  Annotation a = new JsonIgnoreProperties(){
+        @Override
+        public boolean allowGetters() {
+            return false;
+        }
 
+        @Override
+        public boolean allowSetters() {
+            return false;
+        }
+
+        @Override
+        public String[] value() {
+            return new String[0];
+        }
+
+        @Override
+        public boolean ignoreUnknown() {
+            return true;
+        }
+
+        @Override
+        public Class<? extends Annotation> annotationType() {
+            return JsonIgnoreProperties.class;
+        }
+    };
+        //changeAnnotationValue(a,)
+        try {
+            Method method = Class.class.getDeclaredMethod("annotationData", null);
+            method.setAccessible(true);
+            Object annotationData = method.invoke(org.apache.jena.graph.Node.class, null);
+            Field declaredAnnotations = annotationData.getClass().getDeclaredField("declaredAnnotations");
+            declaredAnnotations.setAccessible(true);
+            Map<Class<? extends Annotation>, Annotation> m = new HashMap<>();
+            m.put(JsonIgnoreProperties.class, a);
+            declaredAnnotations.set(annotationData,m);
+//            Map<Class<? extends Annotation>, Annotation> annotations = (Map<Class<? extends Annotation>, Annotation>) ;
+
+        } catch (Exception x){
+            x.printStackTrace();
+        }}
     @GET
     @Path("/test")
     @Produces("text/plain")
@@ -71,11 +117,27 @@ public class RESTService {
     }
 
 
+    @POST
+    @Path("/runConstraintsListPost")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces("application/json")
+    public  List<ConstraintViolation> runConstraintsListPost(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument,  @FormParam("doInference") final boolean doInference) {
+        return runConstraints(baseURI, document,SPINURI, SPINdocument, doInference);
+    }
+
+    @GET
+    @Path("/runConstraintsListGet")
+    @Produces("application/json")
+    public  List<ConstraintViolation>  runConstraintsListGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument,  @QueryParam("doInference") final boolean doInference) {
+        return runConstraints(baseURI, document,SPINURI, SPINdocument, doInference);
+    }
+
+
 
     private String runInference(String baseURI, String document, String SPINURI, String SPINdocument) {
         // Initialize system functions and templates
-        OntModel ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
-
+        Model baseModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
+        OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM, baseModel);
         // Register locally defined functions
         SPINModuleRegistry.get().registerAll(ontModel, null);
 
@@ -98,27 +160,30 @@ public class RESTService {
 
     private String runConstraintsModel(String baseURI, String document, String SPINURI, String SPINdocument, boolean doInference)  {
         // Initialize system functions and templates
-        OntModel ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
+        Model ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
 
         // Register locally defined functions
         SPINModuleRegistry.get().registerAll(ontModel, null);
-
 
         if (doInference) {
             // Create and add Model for inferred triples
             Model newTriples = ModelFactory.createDefaultModel();
             newTriples.setNsPrefixes(ontModel);
-            ontModel.addSubModel(newTriples);
+
+            /// TODO: we don't add teh new triples tot he model check if OK
+            //ontModel.addSubModel(newTriples);
+
+
             // Perform inferencing
             SPINInferences.run(ontModel, newTriples, null, null, false, null);
 
         }
         // Perform constraint checking
         List<ConstraintViolation> cvs = SPINConstraints.check(ontModel, null);
-        System.out.println("Constraint violations:");
-        for (ConstraintViolation cv : cvs) {
-            System.out.println(" - at " + SPINLabels.get().getLabel(cv.getRoot()) + ": " + cv.getMessage());
-        }
+//        System.out.println("Constraint violations:");
+//        for (ConstraintViolation cv : cvs) {
+//            System.out.println(" - at " + SPINLabels.get().getLabel(cv.getRoot()) + ": " + cv.getMessage());
+//        }
 
         // Create results model
         Model results = ModelFactory.createDefaultModel();
@@ -133,27 +198,43 @@ public class RESTService {
     }
 
 
-    private List<ConstraintViolation> runConstraints(String baseURI, String document, String SPINURI, String SPINdocument)  {
+    private List<ConstraintViolation> runConstraints(String baseURI, String document, String SPINURI, String SPINdocument, boolean doInference)  {
         // Initialize system functions and templates
-        OntModel ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
+        Model ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
 
         // Register locally defined functions
         SPINModuleRegistry.get().registerAll(ontModel, null);
+
+
+        if (doInference) {
+            // Create and add Model for inferred triples
+            Model newTriples = ModelFactory.createDefaultModel();
+            newTriples.setNsPrefixes(ontModel);
+
+            /// TODO: we don't add teh new triples tot he model check if OK
+            //ontModel.addSubModel(newTriples);
+
+
+            // Perform inferencing
+            SPINInferences.run(ontModel, newTriples, null, null, false, null);
+
+        }
 
         // Perform constraint checking
         List<ConstraintViolation> cvs = SPINConstraints.check(ontModel, null);
 
 
-//        System.out.println("Constraint violations:");
-//        for (ConstraintViolation cv : cvs) {
-//            System.out.println(" - at " + SPINLabels.get().getLabel(cv.getRoot()) + ": " + cv.getMessage());
-//        }
+        System.out.println("Constraint violations:");
+        for (ConstraintViolation cv : cvs) {
+            System.out.println(" - at " + SPINLabels.get().getLabel(cv.getRoot()) + ": " + cv.getMessage());
+        }
 
         return cvs;
     }
 
-    private OntModel getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {
+    private Model getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {
         SPINModuleRegistry.get().init();
+
 
         Model baseModel = ModelFactory.createDefaultModel();
         String lang = FileUtils.guessLang(baseURI);
@@ -169,7 +250,7 @@ public class RESTService {
             String lang2 = FileUtils.guessLang(SPINURI);
 
             if (document != null) {
-                baseModel.read(new StringReader(SPINdocument), SPINURI, lang2);
+                spiModel.read(new StringReader(SPINdocument), SPINURI, lang2);
             }
             else {
                 spiModel.read(SPINURI, lang);
@@ -185,7 +266,7 @@ public class RESTService {
             baseModel = ModelFactory.createModelForGraph(union);
         }
 
-        return JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM, baseModel);
+        return baseModel;
     }
 
 

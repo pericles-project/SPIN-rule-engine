@@ -160,18 +160,17 @@ public class RESTService {
 
     private String runConstraintsModel(String baseURI, String document, String SPINURI, String SPINdocument, boolean doInference)  {
         // Initialize system functions and templates
-        Model ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
-
+        Model baseModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
+        OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM,baseModel);
         // Register locally defined functions
         SPINModuleRegistry.get().registerAll(ontModel, null);
 
         if (doInference) {
+            System.out.print("run INFERENCE");
             // Create and add Model for inferred triples
             Model newTriples = ModelFactory.createDefaultModel();
             newTriples.setNsPrefixes(ontModel);
-
-            /// TODO: we don't add teh new triples tot he model check if OK
-            //ontModel.addSubModel(newTriples);
+            ontModel.addSubModel(newTriples);
 
 
             // Perform inferencing
@@ -233,9 +232,8 @@ public class RESTService {
     }
 
     private Model getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {
+
         SPINModuleRegistry.get().init();
-
-
         Model baseModel = ModelFactory.createDefaultModel();
         String lang = FileUtils.guessLang(baseURI);
         if (document != null) {

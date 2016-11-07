@@ -1,19 +1,20 @@
 package org.topbraid.spin.examples;
 
-import java.util.List;
-
-import org.topbraid.spin.constraints.ConstraintViolation;
-import org.topbraid.spin.constraints.SPINConstraints;
-import org.topbraid.spin.inference.SPINInferences;
-import org.topbraid.spin.system.SPINLabels;
-import org.topbraid.spin.system.SPINModuleRegistry;
-import org.topbraid.spin.util.JenaUtil;
-
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.topbraid.spin.constraints.ConstraintViolation;
+import org.topbraid.spin.constraints.SPINConstraints;
+import org.topbraid.spin.inference.SPINInferences;
+import org.topbraid.spin.model.Function;
+import org.topbraid.spin.system.SPINLabels;
+import org.topbraid.spin.system.SPINModuleRegistry;
+import org.topbraid.spin.util.JenaUtil;
+
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -28,11 +29,11 @@ public class KennedysInferencingAndConstraintsExample {
 		
 		// Initialize system functions and templates
 		SPINModuleRegistry.get().init();
-
 		// Load main file
 		Model baseModel = ModelFactory.createDefaultModel();
-		baseModel.read("http://topbraid.org/examples/kennedysSPIN");
-		
+		baseModel.read("http://127.0.0.1/rules.spin.ttl");
+		Collection<Function> fun = SPINModuleRegistry.get().getFunctions();
+
 		// Create OntModel with imports
 		OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM,baseModel);
 		
@@ -42,6 +43,7 @@ public class KennedysInferencingAndConstraintsExample {
 
 		// Register locally defined functions
 		SPINModuleRegistry.get().registerAll(ontModel, null);
+		Collection<Function> fun2 = SPINModuleRegistry.get().getFunctions();
 
 		// Run all inferences
 		SPINInferences.run(ontModel, newTriples, null, null, false, null);

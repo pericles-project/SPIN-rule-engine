@@ -1,6 +1,5 @@
 package eu.pericles.spinengine;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.compose.MultiUnion;
 import org.apache.jena.ontology.OntModel;
@@ -12,7 +11,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.topbraid.spin.constraints.ConstraintViolation;
 import org.topbraid.spin.constraints.SPINConstraints;
 import org.topbraid.spin.inference.SPINInferences;
-import org.topbraid.spin.system.SPINLabels;
 import org.topbraid.spin.system.SPINModuleRegistry;
 import org.topbraid.spin.util.JenaUtil;
 import org.topbraid.spin.vocabulary.SP;
@@ -21,60 +19,49 @@ import org.topbraid.spin.vocabulary.SPL;
 
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Provider
 @Path("/")
 public class RESTService {
 
-    static {  Annotation a = new JsonIgnoreProperties(){
-        @Override
-        public boolean allowGetters() {
-            return false;
+    public class SPINResults{
+
+
+        public String constraints;
+
+        public SPINResults(String constraints, String model, String newTriplets, String consoleLog) {
+            this.constraints = constraints;
+            this.model = model;
+            this.newTriplets = newTriplets;
+            this.consoleLog = consoleLog;
         }
 
-        @Override
-        public boolean allowSetters() {
-            return false;
+        public String model = "";
+        public String newTriplets="";
+        public String consoleLog="";
+
+
+        public String getConstraints() {
+            return constraints;
         }
 
-        @Override
-        public String[] value() {
-            return new String[0];
+        public String getModel() {
+            return model;
         }
 
-        @Override
-        public boolean ignoreUnknown() {
-            return true;
+        public String getNewTriplets() {
+            return newTriplets;
         }
 
-        @Override
-        public Class<? extends Annotation> annotationType() {
-            return JsonIgnoreProperties.class;
+        public String getConsoleLog() {
+            return consoleLog;
         }
-    };
-        //changeAnnotationValue(a,)
-        try {
-            Method method = Class.class.getDeclaredMethod("annotationData", null);
-            method.setAccessible(true);
-            Object annotationData = method.invoke(org.apache.jena.graph.Node.class, null);
-            Field declaredAnnotations = annotationData.getClass().getDeclaredField("declaredAnnotations");
-            declaredAnnotations.setAccessible(true);
-            Map<Class<? extends Annotation>, Annotation> m = new HashMap<>();
-            m.put(JsonIgnoreProperties.class, a);
-            declaredAnnotations.set(annotationData,m);
-//            Map<Class<? extends Annotation>, Annotation> annotations = (Map<Class<? extends Annotation>, Annotation>) ;
-
-        } catch (Exception x){
-            x.printStackTrace();
-        }}
+    }
     @GET
     @Path("/test")
     @Produces("text/plain")
@@ -82,61 +69,94 @@ public class RESTService {
         return "test";
     }
 
+
+    /**
+     *
+     * @param baseURI
+     * @param document
+     * @param SPINURI
+     * @param SPINdocument
+     * @param outFormat see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html
+     * @return
+     */
     @POST
     @Path("/runInferencesPost")
     @Consumes("application/x-www-form-urlencoded")
     @Produces("text/plain")
-    public String runInferences(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument) {
-        return runInference(baseURI, document,SPINURI, SPINdocument);
+    public SPINResults runInferences(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument, @FormParam("outFormat") final String outFormat) {
+        return runInference(baseURI, document,SPINURI, SPINdocument, outFormat, false, true);
     }
 
     @GET
     @Path("/runInferencesGet")
-    @Produces("text/plain")
-    public String runInferencesGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument) {
+    @Produces("application/json")
+    public SPINResults runInferencesGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument, @QueryParam("outFormat")final String outFormat) {
 
-        return runInference(baseURI, document,SPINURI, SPINdocument);
+        return runInference(baseURI, document,SPINURI, SPINdocument, outFormat, false, true);
     }
+
 
 
 
     @POST
     @Path("/runConstraintsPost")
     @Consumes("application/x-www-form-urlencoded")
-    @Produces("text/plain")
-    public String runConstraintsPost(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument,  @FormParam("doInference") final boolean doInference) {
-        return runConstraintsModel(baseURI, document,SPINURI, SPINdocument, doInference);
+    @Produces("application/json")
+    public SPINResults runConstraintsPost(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument, @QueryParam("outFormat")final String outFormat, @FormParam("doInference") final boolean doInference) {
+        return runInference(baseURI, document,SPINURI, SPINdocument ,outFormat, true, doInference);
     }
 
     @GET
     @Path("/runConstraintsGet")
-    @Produces("text/plain")
-    public String runConstraintsGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument,  @QueryParam("doInference") final boolean doInference) {
-
-        return runConstraintsModel(baseURI, document,SPINURI, SPINdocument, doInference);
-    }
-
-
-    @POST
-    @Path("/runConstraintsListPost")
-    @Consumes("application/x-www-form-urlencoded")
     @Produces("application/json")
-    public  List<ConstraintViolation> runConstraintsListPost(@FormParam("baseURI") final String baseURI, @FormParam("document") final String document, @FormParam("SPINURI") final String SPINURI, @FormParam("SPINdocument") final String SPINdocument,  @FormParam("doInference") final boolean doInference) {
-        return runConstraints(baseURI, document,SPINURI, SPINdocument, doInference);
+    public SPINResults runConstraintsGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument,  @QueryParam("outFormat")final String outFormat, @QueryParam("doInference") final boolean doInference) {
+        return runInference(baseURI, document,SPINURI, SPINdocument ,outFormat, true, doInference);
     }
 
-    @GET
-    @Path("/runConstraintsListGet")
-    @Produces("application/json")
-    public  List<ConstraintViolation>  runConstraintsListGet(@QueryParam("baseURI") final String baseURI, @QueryParam("document") final String document,@QueryParam("SPINURI") final String SPINURI, @QueryParam("SPINdocument") final String SPINdocument,  @QueryParam("doInference") final boolean doInference) {
-        return runConstraints(baseURI, document,SPINURI, SPINdocument, doInference);
-    }
+    private SPINResults runInference(String baseURI, String document, String SPINURI, String SPINdocument, String outFormat, boolean checkConstraints, boolean doInference) {
+        String constraints = "";
+        String model = "";
+        String newTriplets="";
+        StringWriter w = new StringWriter();
 
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        // IMPORTANT: Save the old System.out!
+        PrintStream old = System.out;
+        PrintStream olderr = System.err;
 
+        // Tell Java to use your special stream
+        System.setOut(ps);
+        System.setErr(ps);
+        // Put things back
+        if (baseURI == null) {
+            System.out.flush();
+            System.err.flush();
+            System.setOut(old);
+            System.setErr(olderr);
 
-    private String runInference(String baseURI, String document, String SPINURI, String SPINdocument) {
+            return new SPINResults(null,null,null,"The baseURI parameter must be set");
+        }
+
+        if (outFormat==null || outFormat.trim().equals("")) {
+            outFormat="TTL";
+        }
         // Initialize system functions and templates
-        Model baseModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
+        Model baseModel = null;
+
+        try {
+            baseModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
+        } catch (org.apache.jena.atlas.web.HttpException x) {
+            ps.println(x.getMessage());
+            ps.println(baseURI);
+
+            System.out.flush();
+            System.err.flush();
+            System.setOut(old);
+            System.setErr(olderr);
+
+            return new SPINResults(null,null,null,baos.toString());
+        }
         OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM, baseModel);
         // Register locally defined functions
         SPINModuleRegistry.get().registerAll(ontModel, null);
@@ -145,90 +165,38 @@ public class RESTService {
         Model newTriples = ModelFactory.createDefaultModel();
         newTriples.setNsPrefixes(ontModel);
         ontModel.addSubModel(newTriples);
-
-        // Perform inferencing
-        SPINInferences.run(ontModel, newTriples, null, null, false, null);
-
-        // Create results model
-        StringWriter w = new StringWriter();
-        // Output results in Turtle
-        newTriples.write(w, FileUtils.langTurtle);
-
-        return w.toString();
-    }
-
-
-    private String runConstraintsModel(String baseURI, String document, String SPINURI, String SPINdocument, boolean doInference)  {
-        // Initialize system functions and templates
-        Model baseModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
-        OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM,baseModel);
-        // Register locally defined functions
-        SPINModuleRegistry.get().registerAll(ontModel, null);
-
+        List<ConstraintViolation> cvs = null;
         if (doInference) {
-            System.out.print("run INFERENCE");
-            // Create and add Model for inferred triples
-            Model newTriples = ModelFactory.createDefaultModel();
-            newTriples.setNsPrefixes(ontModel);
-            ontModel.addSubModel(newTriples);
-
-
-            // Perform inferencing
             SPINInferences.run(ontModel, newTriples, null, null, false, null);
-
-        }
-        // Perform constraint checking
-        List<ConstraintViolation> cvs = SPINConstraints.check(ontModel, null);
-//        System.out.println("Constraint violations:");
-//        for (ConstraintViolation cv : cvs) {
-//            System.out.println(" - at " + SPINLabels.get().getLabel(cv.getRoot()) + ": " + cv.getMessage());
-//        }
-
-        // Create results model
-        Model results = ModelFactory.createDefaultModel();
-        results.setNsPrefix(SPIN.PREFIX, SPIN.NS);
-        results.setNsPrefix("rdfs", RDFS.getURI());
-        SPINConstraints.addConstraintViolationsRDF(cvs, results, false);
-        StringWriter w = new StringWriter();
-
-        results.write(w, FileUtils.langTurtle);
-
-        return w.toString();
-    }
-
-
-    private List<ConstraintViolation> runConstraints(String baseURI, String document, String SPINURI, String SPINdocument, boolean doInference)  {
-        // Initialize system functions and templates
-        Model ontModel = getOntModel(baseURI, document, SPINURI, SPINdocument);
-
-        // Register locally defined functions
-        SPINModuleRegistry.get().registerAll(ontModel, null);
-
-
-        if (doInference) {
-            // Create and add Model for inferred triples
-            Model newTriples = ModelFactory.createDefaultModel();
-            newTriples.setNsPrefixes(ontModel);
-
-            /// TODO: we don't add teh new triples tot he model check if OK
-            //ontModel.addSubModel(newTriples);
-
-
             // Perform inferencing
-            SPINInferences.run(ontModel, newTriples, null, null, false, null);
-
+            w = new StringWriter();
+            ontModel.write(w, FileUtils.langTurtle);
+            model = w.toString();
+            // Create results model
+            w = new StringWriter();
+            // Output results in Turtle
+            newTriples.write(w, FileUtils.langTurtle);
+            newTriplets = w.toString();
         }
 
-        // Perform constraint checking
-        List<ConstraintViolation> cvs = SPINConstraints.check(ontModel, null);
+        if (checkConstraints) {
+            w = new StringWriter();
+            // Perform constraint checking
+            cvs = SPINConstraints.check(ontModel, null);
+            Model results = ModelFactory.createDefaultModel();
+            results.setNsPrefix(SPIN.PREFIX, SPIN.NS);
+            results.setNsPrefix("rdfs", RDFS.getURI());
+            SPINConstraints.addConstraintViolationsRDF(cvs, results, false);
+            results.write(w, FileUtils.langTurtle);
+            constraints = w.toString();
 
-
-        System.out.println("Constraint violations:");
-        for (ConstraintViolation cv : cvs) {
-            System.out.println(" - at " + SPINLabels.get().getLabel(cv.getRoot()) + ": " + cv.getMessage());
         }
+        System.out.flush();
+        System.err.flush();
+        System.setOut(old);
+        System.setErr(olderr);
 
-        return cvs;
+        return new SPINResults(constraints, model, newTriplets, baos.toString());
     }
 
     private Model getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {

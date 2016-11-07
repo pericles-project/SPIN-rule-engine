@@ -1,5 +1,6 @@
 package eu.pericles.spinengine;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.compose.MultiUnion;
 import org.apache.jena.ontology.OntModel;
@@ -42,6 +43,7 @@ public class RESTService {
         }
 
         public String model = "";
+
         public String newTriplets="";
         public String consoleLog="";
 
@@ -61,6 +63,24 @@ public class RESTService {
         public String getConsoleLog() {
             return consoleLog;
         }
+    }
+
+    public class SPINResultsJson extends SPINResults{
+
+        public SPINResultsJson(String constraints, String model, String newTriplets, String consoleLog, String jsonModel, String jsonNewTriplets, String jsonConstraints) {
+            super(constraints, model, newTriplets, consoleLog);
+            this.jsonModel = jsonModel;
+            this.jsonNewTriplets = jsonNewTriplets;
+            this.jsonConstraints = jsonConstraints;
+        }
+
+        @JsonRawValue
+        public String jsonModel = "";
+        @JsonRawValue
+        public String jsonNewTriplets="";
+        @JsonRawValue
+        public String jsonConstraints;
+
     }
     @GET
     @Path("/test")
@@ -170,12 +190,12 @@ public class RESTService {
             SPINInferences.run(ontModel, newTriples, null, null, false, null);
             // Perform inferencing
             w = new StringWriter();
-            ontModel.write(w, FileUtils.langTurtle);
+            ontModel.write(w, outFormat);
             model = w.toString();
             // Create results model
             w = new StringWriter();
             // Output results in Turtle
-            newTriples.write(w, FileUtils.langTurtle);
+            newTriples.write(w, outFormat);
             newTriplets = w.toString();
         }
 
@@ -187,7 +207,7 @@ public class RESTService {
             results.setNsPrefix(SPIN.PREFIX, SPIN.NS);
             results.setNsPrefix("rdfs", RDFS.getURI());
             SPINConstraints.addConstraintViolationsRDF(cvs, results, false);
-            results.write(w, FileUtils.langTurtle);
+            results.write(w, outFormat);
             constraints = w.toString();
 
         }
@@ -196,7 +216,10 @@ public class RESTService {
         System.setOut(old);
         System.setErr(olderr);
 
-        return new SPINResults(constraints, model, newTriplets, baos.toString());
+        if (outFormat.toLowerCase().contains("json"))
+            return new SPINResultsJson("","","", baos.toString(), model, newTriplets,constraints);
+        else
+            return new SPINResults(constraints, model, newTriplets, baos.toString());
     }
 
     private Model getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {

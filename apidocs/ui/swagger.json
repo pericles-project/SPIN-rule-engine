@@ -1,0 +1,394 @@
+{
+  "swagger": "2.0",
+  "info" : {
+    "description" : "<h1>spinengine<\/h1>",
+    "version" : "1.0-SNAPSHOT",
+    "title" : "spinengine"
+  },
+  "schemes" : [],
+  "tags" : [
+    {
+      "name" : "RESTService"
+      ,
+      "description" : "A restful web service that implements calls to the SPIN rule engine."
+    }
+  ],
+  "definitions" : {
+    "json_SPINResults" : {
+      "type" : "object",
+      "title" : "SPINResults",
+          "properties" : {
+            "model" : {
+            "example" : "null",
+            
+"description" : "Defined if the output is NOT in JSON format. The model union model (modified original model)",
+"type" : "string"
+            },
+            "constraints" : {
+            "example" : "null",
+            
+"description" : "Defined if the output is NOT in JSON format. The model results for constraint checking",
+"type" : "string"
+            },
+            "newTriplets" : {
+            "example" : "null",
+            
+"description" : "Defined if the output is NOT in JSON format. The new generated triples.",
+"type" : "string"
+            },
+            "consoleLog" : {
+            "example" : "null",
+            
+"description" : "The results of the console log",
+"type" : "string"
+            },
+            "jsonModel" : {
+            "example" : "null",
+            
+"description" : "If Json output specified:  The model union model (modified original model)",
+"type" : "string"
+            },
+            "jsonNewTriplets" : {
+            "example" : "null",
+            
+"description" : "If Json output specified:  The new generated triples.",
+"type" : "string"
+            },
+            "jsonConstraints" : {
+            "example" : "null",
+            
+"description" : "If Json output specified:   The model results for constraint checking",
+"type" : "string"
+            }
+          },
+      "example" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+},
+      "description" : "This class represents the results of the rule engine execution, consisting in the models and console logs generated\nby the rule engine library. Some of the results may be empty depending on the system call."
+    }
+  },
+  "paths": {
+    "\/runConstraintsGet" : {
+      "get" : {
+        "tags" : [ "RESTService" ],
+        "summary" : "This GET method call will execute the rule engine constraints (optionally inference as well) on the specified data.",
+        "description" : "This GET method call will execute the rule engine constraints (optionally inference as well) on the specified data. The required parameter is the base URI,\nthat will be used to gather the rules and models.",
+        "operationId" : "resource_RESTService_runConstraintsGet_GET",
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "SPINURI",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The URI containing the SPIN rules, if separate and not imported by the base model"
+          },
+          {
+            "name" : "SPINdocument",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The actual SPIN rule document, in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "baseURI",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The base URI for SPIN rule and models."
+          },
+          {
+            "name" : "doInference",
+            "in" : "query",
+            "default" : "true",
+            "type" : "boolean",
+            
+            "description" : "perform inference before constraint checking. Defaults true"
+          },
+          {
+            "name" : "document",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The actual document in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "outFormat",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html"
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "schema" : {
+"description" : "",
+"$ref" : "#/definitions/json_SPINResults"
+            },
+            "headers" : {
+            },
+            "examples" : {
+              "application/json" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+}
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+    ,
+    "\/runConstraintsPost" : {
+      "post" : {
+        "tags" : [ "RESTService" ],
+        "summary" : "This POST method call will execute the rule engine constraints (optionally inference as well) on the specified data.",
+        "description" : "This POST method call will execute the rule engine constraints (optionally inference as well) on the specified data. The required parameter is the base URI,\nthat will be used to gather the rules and models.",
+        "operationId" : "resource_RESTService_runConstraintsPost_POST",
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "SPINURI",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The URI containing the SPIN rules, if separate and not imported by the base model"
+          },
+          {
+            "name" : "SPINdocument",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The actual SPIN rule document, in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "baseURI",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The base URI for SPIN rule and models."
+          },
+          {
+            "name" : "doInference",
+            "in" : "formData",
+            "default" : "true",
+            "type" : "boolean",
+            
+            "description" : "perform inference before constraint checking. Defaults true"
+          },
+          {
+            "name" : "document",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The actual document in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "outFormat",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html"
+          }
+        ],
+        "responses" : {
+          "201" : {
+            "schema" : {
+"description" : "",
+"$ref" : "#/definitions/json_SPINResults"
+            },
+            "headers" : {
+            },
+            "examples" : {
+              "application/json" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+}
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+    ,
+    "\/runInferencesGet" : {
+      "get" : {
+        "tags" : [ "RESTService" ],
+        "summary" : "This GET method call will execute the rule engine inference on the specified data.",
+        "description" : "This GET method call will execute the rule engine inference on the specified data. The required parameter is the base URI,\nthat will be used to gather the rules and models.",
+        "operationId" : "resource_RESTService_runInferencesGet_GET",
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "SPINURI",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The URI containing the SPIN rules, if separate and not imported by the base model"
+          },
+          {
+            "name" : "SPINdocument",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The actual SPIN rule document, in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "baseURI",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The base URI for SPIN rule and models."
+          },
+          {
+            "name" : "document",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The actual document in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "outFormat",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html"
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "schema" : {
+"description" : "",
+"$ref" : "#/definitions/json_SPINResults"
+            },
+            "headers" : {
+            },
+            "examples" : {
+              "application/json" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+}
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+    ,
+    "\/runInferencesPost" : {
+      "post" : {
+        "tags" : [ "RESTService" ],
+        "summary" : "This POST method call will execute the rule engine inference on the specified data.",
+        "description" : "This POST method call will execute the rule engine inference on the specified data. The required parameter is the base URI,\nthat will be used to gather the rules and models.",
+        "operationId" : "resource_RESTService_runInferences_POST",
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "SPINURI",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The URI containing the SPIN rules, if separate and not imported by the base model"
+          },
+          {
+            "name" : "SPINdocument",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The actual SPIN rule document, in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "baseURI",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The base URI for SPIN rule and models."
+          },
+          {
+            "name" : "document",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The actual document in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "outFormat",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html"
+          }
+        ],
+        "responses" : {
+          "201" : {
+            "schema" : {
+"description" : "",
+"$ref" : "#/definitions/json_SPINResults"
+            },
+            "headers" : {
+            },
+            "examples" : {
+              "application/json" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+}
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+    ,
+    "\/test" : {
+      "get" : {
+        "tags" : [ "RESTService" ],
+        "summary" : "Simple test method.",
+        "description" : "Simple test method",
+        "operationId" : "resource_RESTService_test_GET",
+        "produces" : [ "text/plain" ],
+        "parameters" : [
+        ],
+        "responses" : {
+          "200" : {
+            "schema" : {
+"description" : "",
+"type" : "string"
+            },
+            "headers" : {
+            },
+            "examples" : {
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?enunciate-assumed-base-uri ./?>
+<wadl:application xmlns:wadl="http://wadl.dev.java.net/2009/02" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <wadl:doc xmlns:enunciate="http://enunciate.webcohesion.com/" enunciate:generatedBy="Enunciate-2.0"/>
+  
+  <wadl:grammars>
+  </wadl:grammars>
+
+  <wadl:resources base="./">
+
+    <wadl:resource path="runConstraintsGet">
+      <wadl:method name="GET">
+        <wadl:doc><![CDATA[This GET method call will execute the rule engine constraints (optionally inference as well) on the specified data. The required parameter is the base URI,
+that will be used to gather the rules and models.]]></wadl:doc>
+        <wadl:request>
+          <wadl:param name="SPINURI" style="query">
+            <wadl:doc><![CDATA[The URI containing the SPIN rules, if separate and not imported by the base model]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="SPINdocument" style="query">
+            <wadl:doc><![CDATA[The actual SPIN rule document, in case it's not accessible or available at the specified URI]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="baseURI" style="query">
+            <wadl:doc><![CDATA[The base URI for SPIN rule and models.]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="doInference" style="query">
+            <wadl:doc><![CDATA[perform inference before constraint checking. Defaults true]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="document" style="query">
+            <wadl:doc><![CDATA[The actual document in case it's not accessible or available at the specified URI]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="outFormat" style="query">
+            <wadl:doc><![CDATA[the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html]]></wadl:doc>
+          </wadl:param>
+        </wadl:request>
+        <wadl:response>
+          <wadl:doc><![CDATA[a JSON result set in the form of a SPINResults format]]></wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+
+    <wadl:resource path="runConstraintsPost">
+      <wadl:method name="POST">
+        <wadl:doc><![CDATA[This POST method call will execute the rule engine constraints (optionally inference as well) on the specified data. The required parameter is the base URI,
+that will be used to gather the rules and models.]]></wadl:doc>
+        <wadl:request>
+          <wadl:param name="outFormat" style="query">
+            <wadl:doc><![CDATA[the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html]]></wadl:doc>
+          </wadl:param>
+        </wadl:request>
+        <wadl:response>
+          <wadl:doc><![CDATA[a JSON result set in the form of a SPINResults format]]></wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+
+    <wadl:resource path="runInferencesGet">
+      <wadl:method name="GET">
+        <wadl:doc><![CDATA[This GET method call will execute the rule engine inference on the specified data. The required parameter is the base URI,
+that will be used to gather the rules and models.]]></wadl:doc>
+        <wadl:request>
+          <wadl:param name="SPINURI" style="query">
+            <wadl:doc><![CDATA[The URI containing the SPIN rules, if separate and not imported by the base model]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="SPINdocument" style="query">
+            <wadl:doc><![CDATA[The actual SPIN rule document, in case it's not accessible or available at the specified URI]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="baseURI" style="query">
+            <wadl:doc><![CDATA[The base URI for SPIN rule and models.]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="document" style="query">
+            <wadl:doc><![CDATA[The actual document in case it's not accessible or available at the specified URI]]></wadl:doc>
+          </wadl:param>
+          <wadl:param name="outFormat" style="query">
+            <wadl:doc><![CDATA[the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html]]></wadl:doc>
+          </wadl:param>
+        </wadl:request>
+        <wadl:response>
+          <wadl:doc><![CDATA[a JSON result set in the form of a SPINResults format]]></wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+
+    <wadl:resource path="runInferencesPost">
+      <wadl:method name="POST">
+        <wadl:doc><![CDATA[This POST method call will execute the rule engine inference on the specified data. The required parameter is the base URI,
+that will be used to gather the rules and models.]]></wadl:doc>
+        <wadl:request>
+        </wadl:request>
+        <wadl:response>
+          <wadl:doc><![CDATA[a JSON result set in the form of a SPINResults format]]></wadl:doc>
+          <wadl:representation mediaType="application/json"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+
+    <wadl:resource path="test">
+      <wadl:method name="GET">
+        <wadl:doc><![CDATA[Simple test method]]></wadl:doc>
+        <wadl:response>
+          <wadl:doc><![CDATA[the 'test at ' String + current date]]></wadl:doc>
+          <wadl:representation mediaType="text/plain"/>
+        </wadl:response>
+      </wadl:method>
+    </wadl:resource>
+  </wadl:resources>
+</wadl:application>

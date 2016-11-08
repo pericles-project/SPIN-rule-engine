@@ -3,6 +3,11 @@ SPIN rule engine based on the TopQuadrant SPIN API and JENA
 
 The SPIN engine uses the SPIN API to run inference on the model.
 <h1> Installation and execution </h1> 
+<h2> Commandline </h2>
+Download the latest release here: https://github.com/pericles-project/SPIN-rule-engine/releases/download/1.0/SPINEngine.zip <br>
+extract, move to folder and run from shell: <br> 
+ `java -jar spinengine.jar`
+<h2> Web service </h2>
 The project is based on Maven, in order to direclty run the web service (port 8080 by default):<br>
 1. - install Maven <br>
 2. - clone or download the repository <br>
@@ -12,6 +17,7 @@ http://127.0.0.1:8080/spinengine/runInferencesGet?baseURI=http://topbraid.org/ex
 <br><br>
 
 <h1>The API: :honeybee:</h1><br>
+The complete API documentation - automatically generated - with different language clients is included here: https://pericles-project.github.io/SPIN-rule-engine/apidocs/ 
 Currently the API is implemented as a restful service that can be invoked usign both GET and POST methods. The following methods are implemented and can be executed via simple web call:<br>
 * `runInferencesGet` <br>
 * `runInferencesPost` <br>

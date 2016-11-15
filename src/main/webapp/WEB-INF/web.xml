@@ -15,9 +15,22 @@
         </servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>static</servlet-name>
+        <servlet-class>
+            eu.pericles.nsserver.ServeTTL
+        </servlet-class>
+    </servlet>
+
+
+
     <servlet-mapping>
         <servlet-name>Resteasy</servlet-name>
         <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>static</servlet-name>
+        <url-pattern>/ns/*</url-pattern>
     </servlet-mapping>
     <context-param>
         <param-name>resteasy.servlet.mapping.prefix</param-name>

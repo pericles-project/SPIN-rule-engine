@@ -28,6 +28,9 @@ public class ServeTTL extends HttpServlet {
             return;
         }
         response.setHeader("Content-Type", "text/turtle");
+        response.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+
         response.setHeader("Content-Length", String.valueOf(file.length()));
         //response.setHeader("Content-Disposition", "inline; filename=\"" + file.getName() + "\"");
         Files.copy(file.toPath(), response.getOutputStream());

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 Fabio Corubolo - University of Liverpool
+ *
+ *                            Licensed under the Apache License, Version 2.0 (the "License");
+ *                            you may not use this file except in compliance with the License.
+ *                            You may obtain a copy of the License at
+ *
+ *                                  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *                            Unless required by applicable law or agreed to in writing, software
+ *                            distributed under the License is distributed on an "AS IS" BASIS,
+ *                            WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *                            See the License for the specific language governing permissions and
+ *                            limitations under the License.
+ */
+
 package eu.pericles.spinengine;
 
 import com.beust.jcommander.JCommander;
@@ -7,8 +23,10 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.compose.MultiUnion;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDFS;
 import org.jboss.resteasy.annotations.cache.NoCache;
@@ -117,6 +135,79 @@ public class RESTService {
     }
 
     /**
+     * This GET method call will execute the rule engine inference on the specified DEM model rules.
+     *
+     * @param baseURI      The base URI for SPIN rule and models.
+     * @param document     The actual document in case it's not accessible or available at the specified URI
+     * @param outFormat    the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html
+     * @return a JSON result set in the form of a {@link SPINResults} format
+     */
+    @GET
+    @Path("/runInferencesDEMGet")
+    @Produces("application/json")
+    @NoCache()
+    public SPINResults runInferencesDEMGet(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
+
+        SPINResults res = getSpinResults(baseURI, document, outFormat);
+        sendNewTriples(res);
+        return res;
+    }
+
+    private void sendNewTriples(SPINResults r) {
+
+
+    }
+    private SPINResults getSpinResults(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
+        String queryString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
+                "PREFIX DEM-Policy: <http://c102-086.cloud.gwdg.de/ns/DEM-Policy#>\n" +
+                "PREFIX LRM: <http://c102-086.cloud.gwdg.de/ns/LRM#>\n" +
+                "\n" +
+                "SELECT ?definition\n" +
+                "WHERE {\n" +
+                "    ?policy DEM-Policy:hasPolicyStatement ?policy_statement .\n" +
+                " ?policy_statement LRM:definition ?definition .\n" +
+                " ?policy_statement DEM-Policy:format ?policy_format .\n" +
+                " FILTER (?policy_format = \"SPIN\")\n" +
+                "}";
+        Model model = getOntModel(baseURI,null,null, null);
+        org.apache.jena.query.Query query = QueryFactory.create(queryString,baseURI) ;
+        String SPINdocument ="";
+        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+            ResultSet results = qexec.execSelect() ;
+            for ( ; results.hasNext() ; )
+            {
+                QuerySolution soln = results.nextSolution() ;
+                RDFNode x = soln.get("definition") ;       // Get a result variable by name.
+                SPINdocument = x.asLiteral().getString();
+            }
+        }
+        return runInference(baseURI, document, baseURI+".spin.ttl", SPINdocument, outFormat, false, true);
+    }
+
+    /**
+     * This POST method call will execute the rule engine inference on the specified data. The required parameter is the base URI,
+     * that will be used to gather the rules and models.
+     *
+     * @param baseURI      The base URI for SPIN rule and models.
+     * @param document     The actual document in case it's not accessible or available at the specified URI
+     * @param outFormat    the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html
+     * @return a JSON result set in the form of a {@link SPINResults} format
+     */
+    @POST
+    @Path("/runInferencesDEMPost")
+    @Consumes("application/x-www-form-urlencoded")
+    @Produces("application/json")
+    @NoCache()
+    public SPINResults runInferencesDEM(@FormParam("baseURI") String baseURI, @FormParam("document") String document, @FormParam("outFormat") String outFormat) {
+        SPINResults res = getSpinResults(baseURI, document, outFormat);
+        return res;
+
+    }
+
+    /**
      * This GET method call will execute the rule engine inference on the specified data. The required parameter is the base URI,
      * that will be used to gather the rules and models.
      *
@@ -135,6 +226,8 @@ public class RESTService {
 
         return runInference(baseURI, document, SPINURI, SPINdocument, outFormat, false, true);
     }
+
+
 
 
     /**
@@ -258,17 +351,41 @@ public class RESTService {
         System.err.flush();
         System.setOut(old);
         System.setErr(olderr);
-
+        model = toRemote(model);
+        newTriplets = toRemote(newTriplets);
+        constraints = toRemote(constraints);
         if (outFormat.toLowerCase().contains("json"))
             return new SPINResults("", "", "", baos.toString(), model, newTriplets, constraints);
         else
             return new SPINResults(constraints, model, newTriplets, baos.toString(), null, null, null);
     }
 
+
+    private static String toLocal(String original) {
+//        return original;
+        if (original == null){
+            return null;
+        }
+        String r = original.replaceAll("http://www.pericles-project.eu/ns/DEM-","http://c102-086.cloud.gwdg.de/ns/DEM-");
+        r = r.replaceAll("http://xrce.xerox.com/LRM", "http://c102-086.cloud.gwdg.de/ns/LRM");
+        return r;
+    }
+    private static String toRemote(String original) {
+//        return original;
+        if (original == null){
+            return null;
+        }
+        String r = original.replaceAll("http://c102-086.cloud.gwdg.de/ns/DEM-","http://www.pericles-project.eu/ns/DEM-");
+        r = r.replaceAll("http://c102-086.cloud.gwdg.de/ns/LRM","http://xrce.xerox.com/LRM");
+        return r;
+    }
     /**
      * Retrieve and builds the ontology model
      */
     private static Model getOntModel(String baseURI, String document, String SPINURI, String SPINdocument) {
+
+        document = toLocal(document);
+        SPINdocument = toLocal(SPINdocument);
 
         SPINModuleRegistry.get().init();
         Model baseModel = ModelFactory.createDefaultModel();
@@ -283,7 +400,7 @@ public class RESTService {
 
             String lang2 = FileUtils.guessLang(SPINURI);
 
-            if (document != null) {
+            if (SPINdocument != null) {
                 spiModel.read(new StringReader(SPINdocument), SPINURI, lang2);
             } else {
                 spiModel.read(SPINURI, lang);

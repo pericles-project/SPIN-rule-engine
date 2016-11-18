@@ -40,12 +40,17 @@ import org.topbraid.spin.vocabulary.SPIN;
 import org.topbraid.spin.vocabulary.SPL;
 
 import javax.ws.rs.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.ext.Provider;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -146,50 +151,79 @@ public class RESTService {
     @Path("/runInferencesDEMGet")
     @Produces("application/json")
     @NoCache()
-    public SPINResults runInferencesDEMGet(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
+    public SPINResults[] runInferencesDEMGet(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
 
-        SPINResults res = getSpinResults(baseURI, document, outFormat);
-        sendNewTriples(res);
+        SPINResults[] res = getSpinResults(baseURI, document, outFormat);
+        sendNewTriples(res,"test");
         return res;
     }
 
-    private void sendNewTriples(SPINResults r) {
 
+    public static class DEMRequest {
+        String uri;
+        String model;
+        String format;
+        public DEMRequest(){
 
-    }
-    private SPINResults getSpinResults(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
-        String queryString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
-                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
-                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
-                "PREFIX DEM-Policy: <http://c102-086.cloud.gwdg.de/ns/DEM-Policy#>\n" +
-                "PREFIX LRM: <http://c102-086.cloud.gwdg.de/ns/LRM#>\n" +
-                "\n" +
-                "SELECT ?definition\n" +
-                "WHERE {\n" +
-                "    ?policy DEM-Policy:hasPolicyStatement ?policy_statement .\n" +
-                " ?policy_statement LRM:definition ?definition .\n" +
-                " ?policy_statement DEM-Policy:format ?policy_format .\n" +
-                " FILTER (?policy_format = \"SPIN\")\n" +
-                "}";
-        Model model = getOntModel(baseURI,null,null, null);
-        org.apache.jena.query.Query query = QueryFactory.create(queryString,baseURI) ;
-        String SPINdocument ="";
-        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
-            ResultSet results = qexec.execSelect() ;
-            for ( ; results.hasNext() ; )
-            {
-                QuerySolution soln = results.nextSolution() ;
-                RDFNode x = soln.get("definition") ;       // Get a result variable by name.
-                SPINdocument = x.asLiteral().getString();
-            }
         }
-        return runInference(baseURI, document, baseURI+".spin.ttl", SPINdocument, outFormat, false, true);
+
+        public DEMRequest(String uri, String model, String format, String repository) {
+            this.uri = uri;
+            this.model = model;
+            this.format = format;
+            this.repository = repository;
+        }
+
+        public String getRepository() {
+            return repository;
+        }
+
+        public void setRepository(String repository) {
+            this.repository = repository;
+        }
+
+        String repository;
+
+        public String getUri() {
+            return uri;
+        }
+
+        public void setUri(String uri) {
+            this.uri = uri;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public void setModel(String model) {
+            this.model = model;
+        }
+
+        public String getFormat() {
+            return format;
+        }
+
+        public void setFormat(String format) {
+            this.format = format;
+        }
     }
+
+    @POST
+    @Path("/executeDEMRules")
+    @Consumes("application/json")
+    @Produces("application/json")
+    @NoCache()
+    public SPINResults[] runInferencesDEMJson(DEMRequest r) {
+        SPINResults[] res = getSpinResults(r.uri, r.model, r.format);
+        sendNewTriples(res,r.repository);
+        return res;
+
+    }
+
 
     /**
-     * This POST method call will execute the rule engine inference on the specified data. The required parameter is the base URI,
-     * that will be used to gather the rules and models.
+     * This POST method call will execute the rule engine inference on the specified DEM model rules.
      *
      * @param baseURI      The base URI for SPIN rule and models.
      * @param document     The actual document in case it's not accessible or available at the specified URI
@@ -201,11 +235,14 @@ public class RESTService {
     @Consumes("application/x-www-form-urlencoded")
     @Produces("application/json")
     @NoCache()
-    public SPINResults runInferencesDEM(@FormParam("baseURI") String baseURI, @FormParam("document") String document, @FormParam("outFormat") String outFormat) {
-        SPINResults res = getSpinResults(baseURI, document, outFormat);
+    public SPINResults[] runInferencesDEM(@FormParam("baseURI") String baseURI, @FormParam("document") String document, @FormParam("outFormat") String outFormat) {
+        SPINResults[] res = getSpinResults(baseURI, document, outFormat);
+        sendNewTriples(res,"test");
         return res;
 
     }
+
+
 
     /**
      * This GET method call will execute the rule engine inference on the specified data. The required parameter is the base URI,
@@ -271,6 +308,104 @@ public class RESTService {
         return runInference(baseURI, document, SPINURI, SPINdocument, outFormat, true, doInference);
     }
 
+
+
+    public static class PERSISTRequest {
+        public String delta_stream;
+        public String ERMR_repository;
+    }
+
+    private void sendNewTriples(SPINResults[] res, String repository) {
+        // Begin: Temporary solution to extract single deltas
+//
+//        Pattern pattern = Pattern.compile("DEM-Scenario:SEVIRIImage(.*?)] .");
+//        Matcher matcher = pattern.matcher(r.getNewTriplets());
+//        while (matcher.find()) {
+//            System.out.println(matcher.group(1));
+//        }
+
+        for (SPINResults r:res) {
+            Client client = ClientBuilder.newClient();
+            WebTarget target = client.target("http://persist.iti.gr:5000/api/conversion");
+            target.request().accept("application/json");
+            PERSISTRequest request = new PERSISTRequest();
+            request.delta_stream = r.getNewTriplets();
+            request.ERMR_repository = repository;
+            javax.ws.rs.core.Response response = target.request().post(Entity.json(request));
+            String s = response.readEntity(String.class);
+            // Entity e = Entity.json(request);
+            //     int s = response.getStatus();
+            //String res=response.toString();
+            r.jsonPERSISTOUT = s;
+        }
+//        String res = response.getEntity().toString();
+
+//        String value = response.readEntity(String.class);
+//        response.close();  // You should close connections!
+//
+//        ResteasyClient client = new ResteasyClientBuilder().build();
+//        ResteasyWebTarget target = client.target("http://foo.com/resource");        request.accept("application/json");
+
+//        Model model = r.newTripleModel;
+//        String queryString =
+//                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+//                "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
+//                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+//                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
+//                "PREFIX DEM-Core: <http://c102-086.cloud.gwdg.de/ns/DEM-Core#>\n" +
+//
+//                        " \n" +
+//                        "SELECT ?subject \n" +
+//                        "WHERE {?subject ?predicate ?object} \n\n";
+//        org.apache.jena.query.Query query = QueryFactory.create(queryString) ;
+//        String SPINdocument ="";
+//        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+//            ResultSet results = qexec.execSelect() ;
+//            for ( ; results.hasNext() ; )
+//            {
+//                QuerySolution soln = results.nextSolution() ;
+//                RDFNode x = soln.get("subject") ;       // Get a result variable by name.
+//                SPINdocument = x.toString();
+//                SPINdocument.trim();
+//            }
+//        }
+
+    }
+    private SPINResults[] getSpinResults(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
+        LinkedList<SPINResults> result = new LinkedList<>();
+        String queryString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
+                "PREFIX DEM-Policy: <http://c102-086.cloud.gwdg.de/ns/DEM-Policy#>\n" +
+                "PREFIX LRM: <http://c102-086.cloud.gwdg.de/ns/LRM#>\n" +
+                "\n" +
+                "SELECT ?definition\n" +
+                "WHERE {\n" +
+                "    ?policy DEM-Policy:hasPolicyStatement ?policy_statement .\n" +
+                " ?policy_statement LRM:definition ?definition .\n" +
+                " ?policy_statement DEM-Policy:format ?policy_format .\n" +
+                " FILTER (?policy_format = \"SPIN\")\n" +
+                "}";
+        Model model = getOntModel(baseURI,document,null, null);
+        org.apache.jena.query.Query query = QueryFactory.create(queryString,baseURI) ;
+        String SPINdocument ="";
+        int n=0;
+        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+            ResultSet results = qexec.execSelect() ;
+            for ( ; results.hasNext() ; )
+            {
+                QuerySolution soln = results.nextSolution() ;
+                RDFNode x = soln.get("definition") ;       // Get a result variable by name.
+                SPINdocument = x.asLiteral().getString();
+                SPINResults t = runInference(baseURI, document, baseURI+(n++)+".spin.ttl", SPINdocument, outFormat, false, true);
+                result.add(t);
+            }
+        }
+        return result.toArray(new SPINResults[]{});
+    }
+
+
     private static SPINResults runInference(String baseURI, String document, String SPINURI, String SPINdocument, String outFormat, boolean checkConstraints, boolean doInference) {
         String constraints = "";
         String model = "";
@@ -292,7 +427,7 @@ public class RESTService {
             System.err.flush();
             System.setOut(old);
             System.setErr(olderr);
-            return new SPINResults(null, null, null, "The baseURI parameter must be set", null, null, null);
+            return new SPINResults(null, null, null, "The baseURI parameter must be set", null, null, null, null);
         }
 
         if (outFormat == null || outFormat.trim().equals("")) {
@@ -310,7 +445,7 @@ public class RESTService {
             System.err.flush();
             System.setOut(old);
             System.setErr(olderr);
-            return new SPINResults(null, null, null, baos.toString(), null, null, null);
+            return new SPINResults(null, null, null, baos.toString(), null, null, null,null);
         }
 
         OntModel ontModel = JenaUtil.createOntologyModel(OntModelSpec.OWL_MEM, baseModel);
@@ -332,6 +467,7 @@ public class RESTService {
             w = new StringWriter();
             // Output results in Turtle
             newTriples.write(w, outFormat);
+
             newTriplets = w.toString();
         }
 
@@ -355,9 +491,9 @@ public class RESTService {
         newTriplets = toRemote(newTriplets);
         constraints = toRemote(constraints);
         if (outFormat.toLowerCase().contains("json"))
-            return new SPINResults("", "", "", baos.toString(), model, newTriplets, constraints);
+            return new SPINResults("", "", "", baos.toString(), model, newTriplets, constraints, newTriples);
         else
-            return new SPINResults(constraints, model, newTriplets, baos.toString(), null, null, null);
+            return new SPINResults(constraints, model, newTriplets, baos.toString(), null, null, null, newTriples);
     }
 
 
@@ -389,7 +525,7 @@ public class RESTService {
 
         SPINModuleRegistry.get().init();
         Model baseModel = ModelFactory.createDefaultModel();
-        String lang = FileUtils.guessLang(baseURI);
+        String lang = FileUtils.guessLang(baseURI,"ttl");
         if (document != null) {
             baseModel.read(new StringReader(document), baseURI, lang);
         } else {

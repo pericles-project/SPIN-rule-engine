@@ -16,9 +16,11 @@
 
 package eu.pericles.spinengine;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.jena.rdf.model.Model;
 
 /**
  * This class represents the results of the rule engine execution, consisting in the models and console logs generated
@@ -35,7 +37,7 @@ public class SPINResults {
      * @param jsonNewTriplets If Json output specified:  The new generated triples.
      * @param jsonConstraints If Json output specified:   The model results for constraint checking
      */
-    public SPINResults(String constraints, String model, String newTriplets, String consoleLog, String jsonModel, String jsonNewTriplets, String jsonConstraints) {
+    public SPINResults(String constraints, String model, String newTriplets, String consoleLog, String jsonModel, String jsonNewTriplets, String jsonConstraints, Model newTripleModel) {
         this.constraints = constraints;
         this.model = model;
         this.newTriplets = newTriplets;
@@ -43,6 +45,7 @@ public class SPINResults {
         this.jsonModel = jsonModel;
         this.jsonNewTriplets = jsonNewTriplets;
         this.jsonConstraints = jsonConstraints;
+        this.newTripleModel = newTripleModel;
     }
 
     /**
@@ -61,6 +64,11 @@ public class SPINResults {
      * The results of the console log
      */
     public String consoleLog = "";
+    /**
+     * If Json output specified:  The model union model (modified original model)
+     */
+    @JsonRawValue
+    public String jsonPERSISTOUT= "";
 
     /**
      * If Json output specified:  The model union model (modified original model)
@@ -77,6 +85,9 @@ public class SPINResults {
      */
     @JsonRawValue
     public String jsonConstraints;
+
+    @JsonIgnore
+    public Model newTripleModel;
 
 
     public String getConstraints() {

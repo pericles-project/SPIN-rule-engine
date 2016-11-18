@@ -82,6 +82,137 @@ module Pericles
 module Spinengine
 
   # (no documentation provided)
+  class DEMRequest 
+
+    # (no documentation provided)
+    attr_accessor :repository
+    # (no documentation provided)
+    attr_accessor :uri
+    # (no documentation provided)
+    attr_accessor :model
+    # (no documentation provided)
+    attr_accessor :format
+
+    # the json hash for this DEMRequest
+    def to_jaxb_json_hash
+      _h = {}
+      _h['repository'] = repository.to_jaxb_json_hash unless repository.nil?
+      _h['uri'] = uri.to_jaxb_json_hash unless uri.nil?
+      _h['model'] = model.to_jaxb_json_hash unless model.nil?
+      _h['format'] = format.to_jaxb_json_hash unless format.nil?
+      return _h
+    end
+
+    # the json (string form) for this DEMRequest
+    def to_json
+      to_jaxb_json_hash.to_json
+    end
+
+    #initializes this DEMRequest with a json hash
+    def init_jaxb_json_hash(_o)
+        if !_o['repository'].nil?
+          _oa = _o['repository']
+            if(_oa.is_a? Hash)
+              @repository = EnunciateHelpers::LAMB_CLASS_AWARE.call(_oa) if _oa['@class']
+              @repository =  String.from_json(_oa) unless _oa['@class']
+            elsif (_oa.is_a? Array)
+              #an array(of hashes hopefully) or scalar
+              @repository = Array.new
+              _oa.each { | _item | 
+                 if ((_item.nil? || _item['@class'].nil?)rescue true)
+                   @repository.push String.from_json(_item)
+                 else
+                   @repository.push EnunciateHelpers::LAMB_CLASS_AWARE.call(_item)
+                 end
+               }
+            else
+                @repository = _oa
+            end
+          end
+        if !_o['uri'].nil?
+          _oa = _o['uri']
+            if(_oa.is_a? Hash)
+              @uri = EnunciateHelpers::LAMB_CLASS_AWARE.call(_oa) if _oa['@class']
+              @uri =  String.from_json(_oa) unless _oa['@class']
+            elsif (_oa.is_a? Array)
+              #an array(of hashes hopefully) or scalar
+              @uri = Array.new
+              _oa.each { | _item | 
+                 if ((_item.nil? || _item['@class'].nil?)rescue true)
+                   @uri.push String.from_json(_item)
+                 else
+                   @uri.push EnunciateHelpers::LAMB_CLASS_AWARE.call(_item)
+                 end
+               }
+            else
+                @uri = _oa
+            end
+          end
+        if !_o['model'].nil?
+          _oa = _o['model']
+            if(_oa.is_a? Hash)
+              @model = EnunciateHelpers::LAMB_CLASS_AWARE.call(_oa) if _oa['@class']
+              @model =  String.from_json(_oa) unless _oa['@class']
+            elsif (_oa.is_a? Array)
+              #an array(of hashes hopefully) or scalar
+              @model = Array.new
+              _oa.each { | _item | 
+                 if ((_item.nil? || _item['@class'].nil?)rescue true)
+                   @model.push String.from_json(_item)
+                 else
+                   @model.push EnunciateHelpers::LAMB_CLASS_AWARE.call(_item)
+                 end
+               }
+            else
+                @model = _oa
+            end
+          end
+        if !_o['format'].nil?
+          _oa = _o['format']
+            if(_oa.is_a? Hash)
+              @format = EnunciateHelpers::LAMB_CLASS_AWARE.call(_oa) if _oa['@class']
+              @format =  String.from_json(_oa) unless _oa['@class']
+            elsif (_oa.is_a? Array)
+              #an array(of hashes hopefully) or scalar
+              @format = Array.new
+              _oa.each { | _item | 
+                 if ((_item.nil? || _item['@class'].nil?)rescue true)
+                   @format.push String.from_json(_item)
+                 else
+                   @format.push EnunciateHelpers::LAMB_CLASS_AWARE.call(_item)
+                 end
+               }
+            else
+                @format = _oa
+            end
+          end
+    end
+
+    # constructs a DEMRequest from a (parsed) JSON hash
+    def self.from_json(o)
+      if o.nil?
+        return nil
+      else
+        inst = new
+        inst.init_jaxb_json_hash o
+        return inst
+      end
+    end
+  end
+
+end
+
+end
+
+end
+
+module Eu
+
+module Pericles
+
+module Spinengine
+
+  # (no documentation provided)
   class SPINResults 
 
     # Defined if the output is NOT in JSON format. The model union model (modified original model)
@@ -92,6 +223,8 @@ module Spinengine
     attr_accessor :newTriplets
     # The results of the console log
     attr_accessor :consoleLog
+    # If Json output specified:  The model union model (modified original model)
+    attr_accessor :jsonPERSISTOUT
     # If Json output specified:  The model union model (modified original model)
     attr_accessor :jsonModel
     # If Json output specified:  The new generated triples.
@@ -106,6 +239,7 @@ module Spinengine
       _h['constraints'] = constraints.to_jaxb_json_hash unless constraints.nil?
       _h['newTriplets'] = newTriplets.to_jaxb_json_hash unless newTriplets.nil?
       _h['consoleLog'] = consoleLog.to_jaxb_json_hash unless consoleLog.nil?
+      _h['jsonPERSISTOUT'] = jsonPERSISTOUT.to_jaxb_json_hash unless jsonPERSISTOUT.nil?
       _h['jsonModel'] = jsonModel.to_jaxb_json_hash unless jsonModel.nil?
       _h['jsonNewTriplets'] = jsonNewTriplets.to_jaxb_json_hash unless jsonNewTriplets.nil?
       _h['jsonConstraints'] = jsonConstraints.to_jaxb_json_hash unless jsonConstraints.nil?
@@ -193,6 +327,25 @@ module Spinengine
                }
             else
                 @consoleLog = _oa
+            end
+          end
+        if !_o['jsonPERSISTOUT'].nil?
+          _oa = _o['jsonPERSISTOUT']
+            if(_oa.is_a? Hash)
+              @jsonPERSISTOUT = EnunciateHelpers::LAMB_CLASS_AWARE.call(_oa) if _oa['@class']
+              @jsonPERSISTOUT =  String.from_json(_oa) unless _oa['@class']
+            elsif (_oa.is_a? Array)
+              #an array(of hashes hopefully) or scalar
+              @jsonPERSISTOUT = Array.new
+              _oa.each { | _item | 
+                 if ((_item.nil? || _item['@class'].nil?)rescue true)
+                   @jsonPERSISTOUT.push String.from_json(_item)
+                 else
+                   @jsonPERSISTOUT.push EnunciateHelpers::LAMB_CLASS_AWARE.call(_item)
+                 end
+               }
+            else
+                @jsonPERSISTOUT = _oa
             end
           end
         if !_o['jsonModel'].nil?

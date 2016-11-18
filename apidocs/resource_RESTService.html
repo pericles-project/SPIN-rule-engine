@@ -53,6 +53,9 @@
         <ul class="nav nav-sidebar">
           <li><a href="#resource_RESTService_test_GET">GET /test</a></li>
           <li><a href="#resource_RESTService_runInferences_POST">POST /runInferencesPost</a></li>
+          <li><a href="#resource_RESTService_runInferencesDEMGet_GET">GET /runInferencesDEMGet</a></li>
+          <li><a href="#resource_RESTService_runInferencesDEMJson_POST">POST /executeDEMRules</a></li>
+          <li><a href="#resource_RESTService_runInferencesDEM_POST">POST /runInferencesDEMPost</a></li>
           <li><a href="#resource_RESTService_runInferencesGet_GET">GET /runInferencesGet</a></li>
           <li><a href="#resource_RESTService_runConstraintsPost_POST">POST /runConstraintsPost</a></li>
           <li><a href="#resource_RESTService_runConstraintsGet_GET">GET /runConstraintsGet</a></li>
@@ -209,6 +212,264 @@ Content-Type: application/json
   &quot;constraints&quot; : &quot;...&quot;,
   &quot;newTriplets&quot; : &quot;...&quot;,
   &quot;consoleLog&quot; : &quot;...&quot;,
+  &quot;jsonPERSISTOUT&quot; : &quot;...&quot;,
+  &quot;jsonModel&quot; : &quot;...&quot;,
+  &quot;jsonNewTriplets&quot; : &quot;...&quot;,
+  &quot;jsonConstraints&quot; : &quot;...&quot;
+}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resource_RESTService_runInferencesDEMGet_GET">
+        <h3><span class="label label-default resource-method">GET</span> <span class="resource-path">/runInferencesDEMGet <a href="../runInferencesDEMGet" class="glyphicon glyphicon-new-window" target="_blank"></a></span></h3>
+
+        <p>This GET method call will execute the rule engine inference on the specified DEM model rules.</p>
+
+        <table class="table resource-parameters">
+          <caption>Request Parameters</caption>
+          <thead>
+          <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>description</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><span class="parameter-name">baseURI</span></td>
+            <td>query</td>
+            <td><span class="parameter-description">The base URI for SPIN rule and models.</span></td>
+          </tr>
+          <tr>
+            <td><span class="parameter-name">document</span></td>
+            <td>query</td>
+            <td><span class="parameter-description">The actual document in case it's not accessible or available at the specified URI</span></td>
+          </tr>
+          <tr>
+            <td><span class="parameter-name">outFormat</span></td>
+            <td>query</td>
+            <td><span class="parameter-description">the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html</span></td>
+          </tr>
+          </tbody>
+        </table>
+
+        <table class="table resource-response-body">
+          <caption>Response Body</caption>
+          <thead>
+          <tr>
+            <th>media type</th>
+            <th>data type</th>
+            <th>description</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><abbr data-toggle="tooltip" data-placement="top" title="Use the &quot;Accept: application/json&quot; HTTP header to request that this media type be provided by the server."><span class="response-type">application/json</span></abbr></td>
+            <td><span class="datatype-reference">array of <a href="json_SPINResults.html">SPINResults</a>
+ (JSON)</span></td>
+            <td><span class="response-description">a JSON result set in the form of a SPINResults format</span></td>
+          </tr>
+          </tbody>
+        </table>
+        <h4>Example</h4>
+
+        <div class="container-fluid example panel">
+          <div class="row panel-body">
+            <div class="col-md-6">
+              <h5>Request</h5>
+              <pre>
+GET /runInferencesDEMGet
+Accept: application/json
+
+              </pre>
+            </div>
+            <div class="col-md-6">
+              <h5>Response</h5>
+              <pre>
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+                <code class="prettyprint language-js">
+{
+  &quot;model&quot; : &quot;...&quot;,
+  &quot;constraints&quot; : &quot;...&quot;,
+  &quot;newTriplets&quot; : &quot;...&quot;,
+  &quot;consoleLog&quot; : &quot;...&quot;,
+  &quot;jsonPERSISTOUT&quot; : &quot;...&quot;,
+  &quot;jsonModel&quot; : &quot;...&quot;,
+  &quot;jsonNewTriplets&quot; : &quot;...&quot;,
+  &quot;jsonConstraints&quot; : &quot;...&quot;
+}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resource_RESTService_runInferencesDEMJson_POST">
+        <h3><span class="label label-default resource-method">POST</span> <span class="resource-path">/executeDEMRules <a href="../executeDEMRules" class="glyphicon glyphicon-new-window" target="_blank"></a></span></h3>
+
+        <p></p>
+
+        <table class="table resource-request-body">
+          <caption>Request Body</caption>
+          <thead>
+          <tr>
+            <th>media type</th>
+            <th>data type</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><abbr data-toggle="tooltip" data-placement="top" title="Use the &quot;Content-Type: application/json&quot; HTTP header to specify this media type to the server."><span class="request-type">application/json</span></abbr></td>
+            <td><span class="datatype-reference"><a href="json_DEMRequest.html">DEMRequest</a>
+ (JSON)</span></td>
+          </tr>
+          </tbody>
+        </table>
+
+        <table class="table resource-response-body">
+          <caption>Response Body</caption>
+          <thead>
+          <tr>
+            <th>media type</th>
+            <th>data type</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><abbr data-toggle="tooltip" data-placement="top" title="Use the &quot;Accept: application/json&quot; HTTP header to request that this media type be provided by the server."><span class="response-type">application/json</span></abbr></td>
+            <td><span class="datatype-reference">array of <a href="json_SPINResults.html">SPINResults</a>
+ (JSON)</span></td>
+          </tr>
+          </tbody>
+        </table>
+        <h4>Example</h4>
+
+        <div class="container-fluid example panel">
+          <div class="row panel-body">
+            <div class="col-md-6">
+              <h5>Request</h5>
+              <pre>
+POST /executeDEMRules
+Content-Type: application/json
+Accept: application/json
+
+                <code class="prettyprint language-js">
+{
+  &quot;repository&quot; : &quot;...&quot;,
+  &quot;uri&quot; : &quot;...&quot;,
+  &quot;model&quot; : &quot;...&quot;,
+  &quot;format&quot; : &quot;...&quot;
+}
+                </code>
+              </pre>
+            </div>
+            <div class="col-md-6">
+              <h5>Response</h5>
+              <pre>
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+                <code class="prettyprint language-js">
+{
+  &quot;model&quot; : &quot;...&quot;,
+  &quot;constraints&quot; : &quot;...&quot;,
+  &quot;newTriplets&quot; : &quot;...&quot;,
+  &quot;consoleLog&quot; : &quot;...&quot;,
+  &quot;jsonPERSISTOUT&quot; : &quot;...&quot;,
+  &quot;jsonModel&quot; : &quot;...&quot;,
+  &quot;jsonNewTriplets&quot; : &quot;...&quot;,
+  &quot;jsonConstraints&quot; : &quot;...&quot;
+}
+                </code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resource_RESTService_runInferencesDEM_POST">
+        <h3><span class="label label-default resource-method">POST</span> <span class="resource-path">/runInferencesDEMPost <a href="../runInferencesDEMPost" class="glyphicon glyphicon-new-window" target="_blank"></a></span></h3>
+
+        <p>This POST method call will execute the rule engine inference on the specified DEM model rules.</p>
+
+        <table class="table resource-parameters">
+          <caption>Request Parameters</caption>
+          <thead>
+          <tr>
+            <th>name</th>
+            <th>type</th>
+            <th>description</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><span class="parameter-name">baseURI</span></td>
+            <td>form</td>
+            <td><span class="parameter-description">The base URI for SPIN rule and models.</span></td>
+          </tr>
+          <tr>
+            <td><span class="parameter-name">document</span></td>
+            <td>form</td>
+            <td><span class="parameter-description">The actual document in case it's not accessible or available at the specified URI</span></td>
+          </tr>
+          <tr>
+            <td><span class="parameter-name">outFormat</span></td>
+            <td>form</td>
+            <td><span class="parameter-description">the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html</span></td>
+          </tr>
+          </tbody>
+        </table>
+
+        <table class="table resource-response-body">
+          <caption>Response Body</caption>
+          <thead>
+          <tr>
+            <th>media type</th>
+            <th>data type</th>
+            <th>description</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td><abbr data-toggle="tooltip" data-placement="top" title="Use the &quot;Accept: application/json&quot; HTTP header to request that this media type be provided by the server."><span class="response-type">application/json</span></abbr></td>
+            <td><span class="datatype-reference">array of <a href="json_SPINResults.html">SPINResults</a>
+ (JSON)</span></td>
+            <td><span class="response-description">a JSON result set in the form of a SPINResults format</span></td>
+          </tr>
+          </tbody>
+        </table>
+        <h4>Example</h4>
+
+        <div class="container-fluid example panel">
+          <div class="row panel-body">
+            <div class="col-md-6">
+              <h5>Request</h5>
+              <pre>
+POST /runInferencesDEMPost
+Accept: application/json
+
+              </pre>
+            </div>
+            <div class="col-md-6">
+              <h5>Response</h5>
+              <pre>
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+                <code class="prettyprint language-js">
+{
+  &quot;model&quot; : &quot;...&quot;,
+  &quot;constraints&quot; : &quot;...&quot;,
+  &quot;newTriplets&quot; : &quot;...&quot;,
+  &quot;consoleLog&quot; : &quot;...&quot;,
+  &quot;jsonPERSISTOUT&quot; : &quot;...&quot;,
   &quot;jsonModel&quot; : &quot;...&quot;,
   &quot;jsonNewTriplets&quot; : &quot;...&quot;,
   &quot;jsonConstraints&quot; : &quot;...&quot;
@@ -306,6 +567,7 @@ Content-Type: application/json
   &quot;constraints&quot; : &quot;...&quot;,
   &quot;newTriplets&quot; : &quot;...&quot;,
   &quot;consoleLog&quot; : &quot;...&quot;,
+  &quot;jsonPERSISTOUT&quot; : &quot;...&quot;,
   &quot;jsonModel&quot; : &quot;...&quot;,
   &quot;jsonNewTriplets&quot; : &quot;...&quot;,
   &quot;jsonConstraints&quot; : &quot;...&quot;
@@ -422,6 +684,7 @@ Content-Type: application/json
   &quot;constraints&quot; : &quot;...&quot;,
   &quot;newTriplets&quot; : &quot;...&quot;,
   &quot;consoleLog&quot; : &quot;...&quot;,
+  &quot;jsonPERSISTOUT&quot; : &quot;...&quot;,
   &quot;jsonModel&quot; : &quot;...&quot;,
   &quot;jsonNewTriplets&quot; : &quot;...&quot;,
   &quot;jsonConstraints&quot; : &quot;...&quot;
@@ -538,6 +801,7 @@ Content-Type: application/json
   &quot;constraints&quot; : &quot;...&quot;,
   &quot;newTriplets&quot; : &quot;...&quot;,
   &quot;consoleLog&quot; : &quot;...&quot;,
+  &quot;jsonPERSISTOUT&quot; : &quot;...&quot;,
   &quot;jsonModel&quot; : &quot;...&quot;,
   &quot;jsonNewTriplets&quot; : &quot;...&quot;,
   &quot;jsonConstraints&quot; : &quot;...&quot;

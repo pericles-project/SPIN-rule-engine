@@ -14,6 +14,44 @@
     }
   ],
   "definitions" : {
+    "json_DEMRequest" : {
+      "type" : "object",
+      "title" : "DEMRequest",
+          "properties" : {
+            "repository" : {
+            "example" : "null",
+            
+"description" : "",
+"type" : "string"
+            },
+            "uri" : {
+            "example" : "null",
+            
+"description" : "",
+"type" : "string"
+            },
+            "model" : {
+            "example" : "null",
+            
+"description" : "",
+"type" : "string"
+            },
+            "format" : {
+            "example" : "null",
+            
+"description" : "",
+"type" : "string"
+            }
+          },
+      "example" : {
+  "repository" : "...",
+  "uri" : "...",
+  "model" : "...",
+  "format" : "..."
+},
+      "description" : ""
+    }
+    ,
     "json_SPINResults" : {
       "type" : "object",
       "title" : "SPINResults",
@@ -42,6 +80,12 @@
 "description" : "The results of the console log",
 "type" : "string"
             },
+            "jsonPERSISTOUT" : {
+            "example" : "null",
+            
+"description" : "If Json output specified:  The model union model (modified original model)",
+"type" : "string"
+            },
             "jsonModel" : {
             "example" : "null",
             
@@ -66,6 +110,7 @@
   "constraints" : "...",
   "newTriplets" : "...",
   "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
   "jsonModel" : "...",
   "jsonNewTriplets" : "...",
   "jsonConstraints" : "..."
@@ -74,6 +119,53 @@
     }
   },
   "paths": {
+    "\/executeDEMRules" : {
+      "post" : {
+        "tags" : [ "RESTService" ],
+        "description" : "",
+        "operationId" : "resource_RESTService_runInferencesDEMJson_POST",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "body",
+            "in" : "body",
+            "schema" : {
+"description" : "",
+"$ref" : "#/definitions/json_DEMRequest"
+            },
+            "description" : ""
+          }
+        ],
+        "responses" : {
+          "201" : {
+            "schema" : {
+"description" : "",
+"type" : "array",
+"items" : {
+  "$ref" : "#/definitions/json_SPINResults"
+}
+            },
+            "headers" : {
+            },
+            "examples" : {
+              "application/json" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+}
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+    ,
     "\/runConstraintsGet" : {
       "get" : {
         "tags" : [ "RESTService" ],
@@ -140,6 +232,7 @@
   "constraints" : "...",
   "newTriplets" : "...",
   "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
   "jsonModel" : "...",
   "jsonNewTriplets" : "...",
   "jsonConstraints" : "..."
@@ -217,6 +310,125 @@
   "constraints" : "...",
   "newTriplets" : "...",
   "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+}
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+    ,
+    "\/runInferencesDEMGet" : {
+      "get" : {
+        "tags" : [ "RESTService" ],
+        "summary" : "This GET method call will execute the rule engine inference on the specified DEM model rules.",
+        "description" : "This GET method call will execute the rule engine inference on the specified DEM model rules.",
+        "operationId" : "resource_RESTService_runInferencesDEMGet_GET",
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "baseURI",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The base URI for SPIN rule and models."
+          },
+          {
+            "name" : "document",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "The actual document in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "outFormat",
+            "in" : "query",
+            "type" : "string",
+            
+            "description" : "the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html"
+          }
+        ],
+        "responses" : {
+          "200" : {
+            "schema" : {
+"description" : "",
+"type" : "array",
+"items" : {
+  "$ref" : "#/definitions/json_SPINResults"
+}
+            },
+            "headers" : {
+            },
+            "examples" : {
+              "application/json" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
+  "jsonModel" : "...",
+  "jsonNewTriplets" : "...",
+  "jsonConstraints" : "..."
+}
+            },
+            "description" : "Success"
+          }
+        }
+      }
+    }
+    ,
+    "\/runInferencesDEMPost" : {
+      "post" : {
+        "tags" : [ "RESTService" ],
+        "summary" : "This POST method call will execute the rule engine inference on the specified DEM model rules.",
+        "description" : "This POST method call will execute the rule engine inference on the specified DEM model rules.",
+        "operationId" : "resource_RESTService_runInferencesDEM_POST",
+        "produces" : [ "application/json" ],
+        "parameters" : [
+          {
+            "name" : "baseURI",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The base URI for SPIN rule and models."
+          },
+          {
+            "name" : "document",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "The actual document in case it's not accessible or available at the specified URI"
+          },
+          {
+            "name" : "outFormat",
+            "in" : "formData",
+            "type" : "string",
+            
+            "description" : "the result output format, default TTL.  Options are TTL, NTRIPLES, RDFXML, N3, JSONLD, RDFJSON. For the complete list, see formats defined in the JENA API: https://jena.apache.org/documentation/io/rdf-output.html"
+          }
+        ],
+        "responses" : {
+          "201" : {
+            "schema" : {
+"description" : "",
+"type" : "array",
+"items" : {
+  "$ref" : "#/definitions/json_SPINResults"
+}
+            },
+            "headers" : {
+            },
+            "examples" : {
+              "application/json" : {
+  "model" : "...",
+  "constraints" : "...",
+  "newTriplets" : "...",
+  "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
   "jsonModel" : "...",
   "jsonNewTriplets" : "...",
   "jsonConstraints" : "..."
@@ -286,6 +498,7 @@
   "constraints" : "...",
   "newTriplets" : "...",
   "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
   "jsonModel" : "...",
   "jsonNewTriplets" : "...",
   "jsonConstraints" : "..."
@@ -355,6 +568,7 @@
   "constraints" : "...",
   "newTriplets" : "...",
   "consoleLog" : "...",
+  "jsonPERSISTOUT" : "...",
   "jsonModel" : "...",
   "jsonNewTriplets" : "...",
   "jsonConstraints" : "..."

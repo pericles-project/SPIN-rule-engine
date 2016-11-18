@@ -17,6 +17,7 @@ http://127.0.0.1:8080/spinengine/runInferencesGet?baseURI=http://topbraid.org/ex
 <br><br>
 
 <h1>The API: :honeybee:</h1><br>
+DEM Specific API is described in the project documentation <br>
 The complete API documentation - automatically generated - with different language clients is included here: https://pericles-project.github.io/SPIN-rule-engine/apidocs/ 
 Currently the API is implemented as a restful service that can be invoked usign both GET and POST methods. The following methods are implemented and can be executed via simple web call:<br>
 * `runInferencesGet` <br>

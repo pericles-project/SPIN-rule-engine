@@ -1,5 +1,5 @@
 # SPIN-rule-engine
-SPIN rule engine based on the TopQuadrant SPIN API and JENA
+A RESTFUL web API built on top of the existing TopQuadrant SPIN API ( http://topbraid.org/spin/api/) that executes SPIN rule inference on provided models. The engine supports a specialised API for the DEM models that can extract and execute the rules included in DEM policies, and reports the changes back to models using the PERSIST API.
 
 The SPIN engine uses the SPIN API to run inference on the model.
 <h1> Installation and execution </h1> 

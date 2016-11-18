@@ -326,7 +326,7 @@ public class RESTService {
 
         for (SPINResults r:res) {
             Client client = ClientBuilder.newClient();
-            WebTarget target = client.target("http://persist.iti.gr:5000/api/conversion");
+            WebTarget target = client.target("http://persist.iti.gr:5000/api/conversion_multiple_deltas");
             target.request().accept("application/json");
             PERSISTRequest request = new PERSISTRequest();
             request.delta_stream = r.getNewTriplets();

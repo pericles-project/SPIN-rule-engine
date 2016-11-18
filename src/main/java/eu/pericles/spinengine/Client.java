@@ -31,10 +31,11 @@ public class Client {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        WebTarget target = ClientBuilder.newClient().target("http://localhost:8080/spinengine/api/executeDEMRules");
+        WebTarget target = ClientBuilder.newClient().target("http://127.0.0.1:8080/spinengine/api/executeDEMRules");
 
+        System.out.print(args[0]);
         String model = new Scanner(new File(args[0])).useDelimiter("\\Z").next();
-        RESTService.DEMRequest request = new RESTService.DEMRequest("", model, "ttl", "eumetsatdata");
+        RESTService.DEMRequest request = new RESTService.DEMRequest("", model, "NTRIPLES", "eumetsatdata");
         javax.ws.rs.core.Response response = target.request().post(Entity.json(request));
         String s = response.readEntity(String.class);
 

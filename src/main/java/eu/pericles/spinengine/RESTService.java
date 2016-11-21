@@ -384,7 +384,7 @@ public class RESTService {
                 "WHERE {\n" +
                 "    ?policy DEM-Policy:hasPolicyStatement ?policy_statement .\n" +
                 " ?policy_statement LRM:definition ?definition .\n" +
-                " ?policy_statement DEM-Policy:format ?policy_format .\n" +
+                " ?policy_statement DEM-Policy:language ?policy_format .\n" +
                 " FILTER (?policy_format = \"SPIN\")\n" +
                 "}";
         Model model = getOntModel(baseURI,document,null, null);

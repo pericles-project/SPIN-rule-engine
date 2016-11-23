@@ -63,7 +63,14 @@ public class RESTService {
 
     public static class CLIParams {
 
-        @Parameter(names = {"-baseURI", "-URI"}, description = "The base URI for SPIN rule and models", required = true)
+        @Parameter(names = {"-ecosystemFile", "-DEMfile"}, description = "use the specified DEM model", required = false)
+        public String DEM;
+        @Parameter(names = "-sentToPersist", description = "Send generated triples to PERSIST API")
+        public boolean toPersist = true;
+        @Parameter(names = "-repository", description = "Send generated triples to PERSIST API")
+        public String repositiry= "eumetsatdata";
+
+        @Parameter(names = {"-baseURI", "-URI"}, description = "The base URI for SPIN rule and models", required = false)
         public String uri;
 
         @Parameter(names = "-basedoc", description = "The actual document in case it's not accessible or available at the specified URI")
@@ -100,9 +107,19 @@ public class RESTService {
             return;
         }
 
-        SPINResults s = runInference(p.uri, p.baseDoc, p.SPINURI, p.SPINdoc, p.outFormat, p.constraints || p.constraintsnoinf, !p.constraintsnoinf);
-        System.out.print(s.toString().replace("\\n", "\\n\n"));
+        if (p.DEM!= null) {
+            SPINResults[] res = getSpinResults(p.uri, p.DEM, p.outFormat);
+            if (p.toPersist)
+                sendNewTriples(res,p.repositiry);
+            for (SPINResults r:res){
+                System.out.print(r.toString().replace("\\n", "\\n\n"));
+                System.out.print("\n\n----\n\n");
+            }
 
+        } else {
+            SPINResults s = runInference(p.uri, p.baseDoc, p.SPINURI, p.SPINdoc, p.outFormat, p.constraints || p.constraintsnoinf, !p.constraintsnoinf);
+            System.out.print(s.toString().replace("\\n", "\\n\n"));
+        }
     }
 
 
@@ -315,7 +332,7 @@ public class RESTService {
         public String ERMR_repository;
     }
 
-    private void sendNewTriples(SPINResults[] res, String repository) {
+    private static void sendNewTriples(SPINResults[] res, String repository) {
         // Begin: Temporary solution to extract single deltas
 //
 //        Pattern pattern = Pattern.compile("DEM-Scenario:SEVIRIImage(.*?)] .");
@@ -371,7 +388,7 @@ public class RESTService {
 //        }
 
     }
-    private SPINResults[] getSpinResults(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
+    private static SPINResults[] getSpinResults(@QueryParam("baseURI") String baseURI, @QueryParam("document") String document, @QueryParam("outFormat") String outFormat) {
         LinkedList<SPINResults> result = new LinkedList<>();
         String queryString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                 "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +

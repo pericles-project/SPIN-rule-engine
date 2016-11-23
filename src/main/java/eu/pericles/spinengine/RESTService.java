@@ -45,13 +45,11 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.ext.Provider;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * A restful web service that implements calls to the SPIN rule engine. It implements methods for rule inference and for constraints checking.
@@ -63,7 +61,7 @@ public class RESTService {
 
     public static class CLIParams {
 
-        @Parameter(names = {"-ecosystemFile", "-DEMfile"}, description = "use the specified DEM model", required = false)
+        @Parameter(names = {"-ecosystemFile", "-DEM"}, description = "use the specified DEM model", required = false)
         public String DEM;
         @Parameter(names = "-sentToPersist", description = "Send generated triples to PERSIST API")
         public boolean toPersist = true;
@@ -107,13 +105,18 @@ public class RESTService {
             return;
         }
 
-        if (p.DEM!= null) {
-            SPINResults[] res = getSpinResults(p.uri, p.DEM, p.outFormat);
-            if (p.toPersist)
-                sendNewTriples(res,p.repositiry);
-            for (SPINResults r:res){
-                System.out.print(r.toString().replace("\\n", "\\n\n"));
-                System.out.print("\n\n----\n\n");
+        if (p.DEM!= null && p.DEM.trim().length()>0) {
+            try {
+                String model = new Scanner(new File(p.DEM)).useDelimiter("\\Z").next();
+                SPINResults[] res = getSpinResults("", model, p.outFormat);
+                if (p.toPersist)
+                    sendNewTriples(res, p.repositiry);
+                for (SPINResults r : res) {
+                    System.out.print(r.toString().replace("\\n", "\\n\n"));
+                    System.out.print("\n\n----\n\n");
+                }
+            } catch (FileNotFoundException x) {
+                x.printStackTrace();
             }
 
         } else {

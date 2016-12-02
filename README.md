@@ -4,7 +4,7 @@ A RESTFUL web API built on top of the existing TopQuadrant SPIN API ( http://top
 The SPIN engine uses the SPIN API to run inference on the model.
 <h1> Installation and execution </h1> 
 <h2> Commandline </h2>
-Download the latest release here: https://github.com/pericles-project/SPIN-rule-engine/releases/download/1.0/SPINEngine.zip <br>
+Download the latest release here: https://github.com/pericles-project/SPIN-rule-engine/releases/download/1.1/spinengine.zip <br>
 extract, move to folder and run from shell: <br> 
  `java -jar spinengine.jar`
 <h2> Web service </h2>

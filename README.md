@@ -14,7 +14,11 @@ The project is based on Maven, in order to direclty run the web service (port 80
 3. - go to the folder and run `mvn jetty:run` <br>
 4. - open the browser at the local address: <br>
 http://127.0.0.1:8080/spinengine/runInferencesGet?baseURI=http://topbraid.org/examples/kennedysSPIN
-<br><br>
+<br>
+<h3> WAR file install</h3>
+Follow steps 1-2 and then package the war file using the standard MVN command:
+3 -  go to the folder and run `mvn war:war` <br>
+<br>
 
 <h1>The API: :honeybee:</h1><br>
 DEM Specific API is described in the project documentation <br>
